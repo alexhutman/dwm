@@ -194,6 +194,7 @@ static void resizemouse(const Arg *arg);
 static void restack(Monitor *m);
 static void run(void);
 static void scan(void);
+static void configure_monitors(void);
 static int sendevent(Client *c, Atom proto);
 static void sendmon(Client *c, Monitor *m);
 static void setclientstate(Client *c, long state);
@@ -1416,6 +1417,17 @@ scan(void)
 	}
 }
 
+/* Monitors won't automatically set their refresh rates correctly for some reason,
+ * even when executing `configure-monitors` in .xinitrc...
+ * Configuring them when dwm launches is the next best thing I suppose */
+void
+configure_monitors(void)
+{
+	static const char *cmd[] = { "configure-monitors", NULL };
+	const Arg configure_arg = {.v = cmd};
+	spawn(&configure_arg);
+}
+
 void
 sendmon(Client *c, Monitor *m)
 {
@@ -2156,6 +2168,7 @@ main(int argc, char *argv[])
 	if (pledge("stdio rpath proc exec", NULL) == -1)
 		die("pledge");
 #endif /* __OpenBSD__ */
+	configure_monitors();
 	scan();
 	run();
 	cleanup();
