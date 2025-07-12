@@ -21,7 +21,9 @@
  * To understand everything else, start reading main().
  */
 #include <errno.h>
+#include <linux/limits.h>
 #include <locale.h>
+#include <pwd.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -194,7 +196,6 @@ static void resizemouse(const Arg *arg);
 static void restack(Monitor *m);
 static void run(void);
 static void scan(void);
-static void configure_monitors(void);
 static int sendevent(Client *c, Atom proto);
 static void sendmon(Client *c, Monitor *m);
 static void setclientstate(Client *c, long state);
@@ -233,6 +234,11 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
+
+/* hutman kustom function declarations */
+static const char *get_eff_usr_wd();
+static void takescreenshot(const Arg *arg);
+static void configure_monitors();
 
 /* variables */
 static const char broken[] = "broken";
@@ -1417,17 +1423,6 @@ scan(void)
 	}
 }
 
-/* Monitors won't automatically set their refresh rates correctly for some reason,
- * even when executing `configure-monitors` in .xinitrc...
- * Configuring them when dwm launches is the next best thing I suppose */
-void
-configure_monitors(void)
-{
-	static const char *cmd[] = { "configure-monitors", NULL };
-	const Arg configure_arg = {.v = cmd};
-	spawn(&configure_arg);
-}
-
 void
 sendmon(Client *c, Monitor *m)
 {
@@ -2149,6 +2144,46 @@ zoom(const Arg *arg)
 	if (c == nexttiled(selmon->clients) && !(c = nexttiled(c->next)))
 		return;
 	pop(c);
+}
+
+const char *get_eff_usr_wd() {
+    const struct passwd *effuserinfo = getpwuid(geteuid());
+    if (!effuserinfo) {
+        return NULL;
+    }
+
+    return effuserinfo->pw_dir;
+}
+
+void takescreenshot(const Arg *arg) {
+    const char *dest_path = arg->v;
+    char dest[PATH_MAX];
+
+    if (!dest_path) {
+        const char *eff_usr_wd = get_eff_usr_wd();
+        static const char *pictures_subdir = "Pictures/Screenshots";
+        static const char *format = "%Y-%m-%dT%H:%M_$wx$h.png";
+        if (!eff_usr_wd) {
+            // Idk man.
+            return;
+        }
+
+        snprintf(dest, PATH_MAX-1, "%s/%s/%s", eff_usr_wd, pictures_subdir, format);
+        dest_path = dest;
+    }
+
+    char *screenshotcmd[]  = { "scrot", "-m", (char *)dest_path, NULL };
+    const Arg screenshotarg = {.v = screenshotcmd};
+    spawn(&screenshotarg);
+}
+
+/* Monitors won't automatically set their refresh rates correctly for some reason,
+ * even when executing `configure-monitors` in .xinitrc...
+ * Configuring them when dwm launches is the next best thing I suppose */
+void configure_monitors() {
+	static const char *cmd[] = { "configure-monitors", NULL };
+	const Arg configure_arg = {.v = cmd};
+	spawn(&configure_arg);
 }
 
 int
