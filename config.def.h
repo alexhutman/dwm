@@ -98,7 +98,8 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_period, tagmon,         {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_j,      focusmon,       {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_k,      focusmon,       {.i = +1 } },
-	{ METAMODKEY|ShiftMask,         XK_s,      takescreenshot, {0} },
+	{ ALWAYS_ENABLED,               XK_Print,  takescreenshot, {.ui = true } },
+	{ ShiftMask,                    XK_Print,  takescreenshot, {.ui = false  } },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)

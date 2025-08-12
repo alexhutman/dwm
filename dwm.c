@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <X11/cursorfont.h>
@@ -2157,23 +2158,20 @@ const char *get_eff_usr_wd() {
 }
 
 void takescreenshot(const Arg *arg) {
-    const char *dest_path = arg->v;
-    char dest[PATH_MAX];
+    static const char *pictures_subdir = "Pictures/Screenshots";
+    static const char *format = "%Y-%m-%dT%H:%M_$wx$h.png";
 
-    if (!dest_path) {
-        const char *eff_usr_wd = get_eff_usr_wd();
-        static const char *pictures_subdir = "Pictures/Screenshots";
-        static const char *format = "%Y-%m-%dT%H:%M_$wx$h.png";
-        if (!eff_usr_wd) {
-            // Idk man.
-            return;
-        }
-
-        snprintf(dest, PATH_MAX-1, "%s/%s/%s", eff_usr_wd, pictures_subdir, format);
-        dest_path = dest;
+    const char *eff_usr_wd = get_eff_usr_wd();
+    if (!eff_usr_wd) {
+        // Idk man.
+        return;
     }
+    char dest[PATH_MAX];
+    snprintf(dest, PATH_MAX-1, "%s/%s/%s", eff_usr_wd, pictures_subdir, format);
 
-    char *screenshotcmd[]  = { "scrot", "-m", (char *)dest_path, NULL };
+    const bool fullscreen = arg->ui;
+    const char *opt = fullscreen ? "-m" : "-s";
+    char *screenshotcmd[]  = { "scrot", (char *)opt, dest, NULL };
     const Arg screenshotarg = {.v = screenshotcmd};
     spawn(&screenshotarg);
 }
