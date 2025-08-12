@@ -1,5 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
+#include <X11/XF86keysym.h>
+
 /* appearance */
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
@@ -52,6 +54,7 @@ static const Layout layouts[] = {
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
+#define ALWAYS_ENABLED 0
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
@@ -60,6 +63,15 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_red, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "st", NULL };
+
+static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "@DEFAULT_SINK@", "+1%",    NULL };
+static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "@DEFAULT_SINK@", "-1%",    NULL };
+static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "@DEFAULT_SINK@", "toggle", NULL };
+
+static const char *audiostop[]   = { "/usr/bin/playerctl", "stop",       NULL };
+static const char *audioprev[]   = { "/usr/bin/playerctl", "previous",   NULL };
+static const char *audiotoggle[] = { "/usr/bin/playerctl", "play-pause", NULL };
+static const char *audionext[]   = { "/usr/bin/playerctl", "next",       NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -97,6 +109,16 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+
+	/* whacky keys */
+	{ ALWAYS_ENABLED,               XF86XK_AudioLowerVolume, spawn, {.v = downvol } },
+	{ ALWAYS_ENABLED,               XF86XK_AudioRaiseVolume, spawn, {.v = upvol   } },
+	{ ALWAYS_ENABLED,               XF86XK_AudioMute,        spawn, {.v = mutevol } },
+
+	{ ALWAYS_ENABLED,               XF86XK_AudioStop, spawn, {.v = audiostop   } },
+	{ ALWAYS_ENABLED,               XF86XK_AudioPrev, spawn, {.v = audioprev   } },
+	{ ALWAYS_ENABLED,               XF86XK_AudioPlay, spawn, {.v = audiotoggle } },
+	{ ALWAYS_ENABLED,               XF86XK_AudioNext, spawn, {.v = audionext   } },
 };
 
 /* button definitions */
