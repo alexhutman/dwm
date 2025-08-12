@@ -239,6 +239,7 @@ static void zoom(const Arg *arg);
 static const char *get_eff_usr_wd();
 static void takescreenshot(const Arg *arg);
 static void configure_monitors();
+static void start_slstatus();
 
 /* variables */
 static const char broken[] = "broken";
@@ -2186,6 +2187,12 @@ void configure_monitors() {
 	spawn(&configure_arg);
 }
 
+void start_slstatus() {
+	static const char *cmd[] = { "slstatus", NULL };
+	const Arg configure_arg = {.v = cmd};
+	spawn(&configure_arg);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -2204,6 +2211,7 @@ main(int argc, char *argv[])
 		die("pledge");
 #endif /* __OpenBSD__ */
 	configure_monitors();
+	start_slstatus();
 	scan();
 	run();
 	cleanup();
