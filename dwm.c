@@ -237,7 +237,6 @@ static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 
 /* hutman kustom function declarations */
-static const char *get_eff_usr_wd();
 static void takescreenshot(const Arg *arg);
 static void configure_monitors();
 static void start_slstatus();
@@ -2148,30 +2147,10 @@ zoom(const Arg *arg)
 	pop(c);
 }
 
-const char *get_eff_usr_wd() {
-    const struct passwd *effuserinfo = getpwuid(geteuid());
-    if (!effuserinfo) {
-        return NULL;
-    }
-
-    return effuserinfo->pw_dir;
-}
-
 void takescreenshot(const Arg *arg) {
-    static const char *pictures_subdir = "Pictures/Screenshots";
-    static const char *format = "%Y-%m-%dT%H:%M_$wx$h.png";
-
-    const char *eff_usr_wd = get_eff_usr_wd();
-    if (!eff_usr_wd) {
-        // Idk man.
-        return;
-    }
-    char dest[PATH_MAX];
-    snprintf(dest, PATH_MAX-1, "%s/%s/%s", eff_usr_wd, pictures_subdir, format);
-
     const bool fullscreen = arg->ui;
-    const char *opt = fullscreen ? "-m" : "-s";
-    char *screenshotcmd[]  = { "scrot", (char *)opt, dest, NULL };
+    const char *scrot_opt = fullscreen ? "-m" : "-s";
+    char *screenshotcmd[]  = { "screenshot", (char *)scrot_opt, NULL };
     const Arg screenshotarg = {.v = screenshotcmd};
     spawn(&screenshotarg);
 }
